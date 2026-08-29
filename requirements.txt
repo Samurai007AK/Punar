@@ -1,0 +1,15 @@
+# Punar runtime dependencies (Python 3.11+).
+#
+# This file is the runtime set only, and mirrors [project.dependencies] in
+# pyproject.toml. For development install the extras instead:
+#
+#     pip install -e ".[dev]"
+#
+# Optional extras, all declared in pyproject.toml:
+#   .[charts]     matplotlib, for benchmark chart rendering
+#   .[crypto]     cryptography, for encrypted PII at rest in the audit store
+#   .[dev]        everything above plus pytest, httpx, ruff, mypy, coverage
+
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pydantic==2.10.4

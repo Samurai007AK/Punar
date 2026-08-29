@@ -1,0 +1,92 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "punar"
+version = "1.0.0"
+description = "Autonomous recovery agent for failed Razorpay payments (RBI Fair-Practices compliant)"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+keywords = ["razorpay", "payments", "dunning", "revenue-recovery", "compliance", "bandit"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Financial and Insurance Industry",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Office/Business :: Financial",
+]
+
+# Runtime only. Charting, testing and the optional graph runner are extras --
+# a payments service should not ship a test runner or a plotting library.
+dependencies = [
+    "fastapi==0.115.6",
+    "uvicorn[standard]==0.34.0",
+    "pydantic==2.10.4",
+]
+
+[project.optional-dependencies]
+charts = ["matplotlib==3.9.3"]
+crypto = ["cryptography>=42.0"]
+dev = [
+    "punar[charts,crypto]",
+    "pytest==8.3.4",
+    "httpx>=0.27",
+    "ruff>=0.6",
+    "mypy>=1.11",
+    "coverage[toml]>=7.6",
+]
+
+[project.scripts]
+punar = "punar.main:main"
+
+[project.urls]
+Homepage = "https://github.com/your-org/punar"
+Source = "https://github.com/your-org/punar"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["punar*"]
+
+# policy.json is loaded by every code path. Without this the installed wheel
+# raises FileNotFoundError on import of the service.
+[tool.setuptools.package-data]
+punar = ["config/*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+filterwarnings = ["error::DeprecationWarning:punar.*"]
+
+[tool.coverage.run]
+source = ["punar"]
+omit = ["punar/charts.py"]
+
+[tool.coverage.report]
+skip_empty = true
+exclude_lines = ["pragma: no cover", "if TYPE_CHECKING:", "raise NotImplementedError"]
+
+[tool.ruff]
+# Message templates and explanatory comments read better unwrapped; 120
+# keeps them on one line rather than forcing awkward mid-sentence breaks.
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "C4", "SIM"]
+ignore = ["B008", "SIM108", "SIM105"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E501"]
+# Customer-facing message templates are content, not code: wrapping them would
+# hide what actually gets sent.
+"punar/core/copy.py" = ["E501"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_unused_ignores = true
+warn_redundant_casts = true
+ignore_missing_imports = true
+exclude = ["build/", "dist/"]

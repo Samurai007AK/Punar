@@ -1,0 +1,94 @@
+{
+  "guardrails": {
+    "contact_window": {
+      "start_hour": 8,
+      "end_hour": 19,
+      "timezone": "Asia/Kolkata"
+    },
+    "max_touches_per_day": 3,
+    "max_outreach_touches": 3,
+    "min_inter_touch_minutes": 60,
+    "daily_max_cost_inr": 500,
+    "block_non_retriable": true
+  },
+  "channels": {
+    "whatsapp": {
+      "cost_inr": 0.5,
+      "enabled": true,
+      "contacts_customer": true,
+      "intrusiveness": 1.0
+    },
+    "email": {
+      "cost_inr": 0.05,
+      "enabled": true,
+      "contacts_customer": true,
+      "intrusiveness": 0.5
+    },
+    "voice": {
+      "cost_inr": 3.0,
+      "enabled": true,
+      "contacts_customer": true,
+      "intrusiveness": 2.0
+    },
+    "sms": {
+      "cost_inr": 0.2,
+      "enabled": false,
+      "contacts_customer": true,
+      "intrusiveness": 0.8
+    },
+    "silent_retry": {
+      "cost_inr": 0.0,
+      "enabled": true,
+      "contacts_customer": false,
+      "intrusiveness": 0.0,
+      "exempt_from": [
+        "quiet_hours",
+        "daily_touch_cap",
+        "inter_touch_gap"
+      ]
+    },
+    "internal_escalation": {
+      "cost_inr": 0.0,
+      "enabled": true,
+      "contacts_customer": false,
+      "intrusiveness": 0.0,
+      "exempt_from": [
+        "quiet_hours",
+        "daily_touch_cap",
+        "inter_touch_gap",
+        "opt_out",
+        "non_retriable"
+      ]
+    }
+  },
+  "retry": {
+    "unknown_retry_limit": 1,
+    "backoff_hours": {
+      "insufficient_funds": 72,
+      "bank_decline_general": 24,
+      "upi_timeout": 4,
+      "upi_limit_exceeded": 20,
+      "mandate_inactive": 24,
+      "expired_card": 48,
+      "invalid_cvv": 24,
+      "mandate_expired": 24,
+      "fraud_block": 0,
+      "lost_stolen_card": 0,
+      "account_closed": 0
+    },
+    "default_backoff_hours": 24
+  },
+  "bandit": {
+    "default_prior_success": 1.0,
+    "default_prior_failure": 1.0,
+    "annoyance_weight_inr": 25.0,
+    "min_expected_value_inr": 0.0,
+    "persist_posteriors": false,
+    "db_path": null
+  },
+  "copy": {
+    "brand_name": "Punar",
+    "optout_line": "Reply STOP to opt out of payment reminders.",
+    "sender": "Punar Payments"
+  }
+}
