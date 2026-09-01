@@ -1,4 +1,4 @@
-"""Punar judge console -- one-command local demo UI.
+"""Punar local console -- one-command demo UI.
 
 Run:
     streamlit run app.py
@@ -33,14 +33,14 @@ from punar.audit import AuditStore
 from punar.core.agent import run_agent
 from punar.core.gate import load_policy
 
-st.set_page_config(page_title="Punar judge console", layout="wide")
+st.set_page_config(page_title="Punar console", layout="wide")
 
 POLICY_PATH = "punar/config/policy.json"
 DEMO_RUN_DIR = "outputs/demo_run"
 DEMO_AUDIT_DB = "outputs/demo_audit.db"
 IST = ZoneInfo("Asia/Kolkata")
 
-st.title("Punar judge console")
+st.title("Punar console")
 st.caption("Every view below calls the same functions punar.main / the API use. "
            "Nothing here is reimplemented for the demo.")
 

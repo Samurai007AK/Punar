@@ -16,54 +16,6 @@ and an audit trail."*
 
 ---
 
-## Judge map
-
-Where each evaluation lens is answered, so you don't have to hunt for it.
-
-| lens | where it's answered |
-|---|---|
-| **Problem taste.** | A meaningful share of failed payments are recoverable with the right nudge at the right time, and the wrong nudge (wrong hour, wrong customer, wrong reason) is a compliance incident, not a retry. See [the honest headline](#the-honest-headline) below for what "meaningful" actually means once you subtract self-cure. |
-| **Build quality.** | `pytest -q` (84 tests), `python -m mypy punar` (clean), a working `Dockerfile`, and real dependency checks at `GET /health` / `GET /ready` (not liveness pings). |
-| **AI judgment.** | The shipped decision path is rule-based, not an LLM call; the reasoning is in [`docs/why_not_llm.md`](docs/why_not_llm.md). Separately, and more load-bearing: the benchmark's world model in [`punar/sim/world.py`](punar/sim/world.py) is mechanistic (blockers, channel reach, persuasion, fatigue) rather than a hand-tuned (reason x intervention) rate table, specifically so the simulator's beliefs and the agent's decision priors can't be two spellings of the same number. An agent graded by the function it optimises proves nothing; this repo used to do exactly that (see the next row). |
-| **Failure recovery.** | [`VERIFICATION_NOTES.md`](VERIFICATION_NOTES.md) is the log of real defects found and fixed this session, not a changelog. Three worth reading first: the headline lift was **+38.0 pts** because the baseline and Punar were scored through different branches, and collapsed to **+0.8 pts** once both ran through one scoring path; two of the three headline features, `silent_retry_aligned` and `escalate_manual`, mapped to a channel `policy.json` never defined and so had **never once executed**; and the audit store's docstring said "append-only" while its only write path was a SQL `UPDATE`, so a second write silently destroyed the first. |
-| **Track 03 bar.** | `python scripts/benchmark.py --n-cases 250 --seed 42 --seeds 20` reproduces the table below; the same run's `summary` and `comparisons` blocks land in `outputs/demo_run/benchmark.json` via `punar report`; `GET /audit/verify` checks the hash chain live; and `streamlit run app.py` is a judge console covering all three (single-case walkthrough, batch results, audit tamper demo) in one place. |
-
-## Results at a glance
-
-Same 250 cases x 20 cohorts as below, compliance violations = contacted after opt-out + contacted on a non-retriable decline.
-
-| arm | recovery rate | net revenue | touches / recovery | compliance violations |
-|---|---|---|---|---|
-| do nothing | 15.4% `[14.5, 16.4]` | ₹333,012 | 0.00 | 0 |
-| naive dunning | 16.4% `[15.4, 17.4]` | ₹361,023 | 24.55 | 67 |
-| realistic merchant baseline | 37.5% `[36.4, 38.6]` | ₹799,983 | 8.41 | 29 |
-| **Punar** | **38.3%** `[37.1, 39.7]` | ₹758,088 | **7.79** | **0** |
-
-**Punar does not significantly beat the realistic merchant baseline on recovery rate**
-(+0.8 pts, `p = 0.26`, inside the confidence interval). What it actually buys: fewer
-touches per recovery, zero contacts on opt-outs or non-retriable declines (the baseline
-makes 29 of the latter), and a hash-chained audit trail, at a net-revenue cost of about
-₹42k per cohort for the ops time that escalation takes. Full breakdown, ablations and
-significance tests below.
-
-## How to demo this
-
-```bash
-pip install -e ".[dev]"
-pytest -q                                            # 84 tests
-
-python scripts/benchmark.py --n-cases 250 --seed 42 --seeds 20   # the table above
-
-uvicorn punar.api.server:app --reload                # the API
-
-streamlit run app.py                                 # judge console: walkthrough, batch, audit lab
-                                                     # (streamlit ships with .[dev]; .[demo] alone also works)
-```
-
-
-
----
-
 ## The honest headline
 
 Over **250 cases × 20 independent cohorts**, every arm scored by the *same* world model:
@@ -126,6 +78,7 @@ pip install -e ".[dev]"
 
 pytest -q                          # 84 tests
 python scripts/benchmark.py --seeds 3      # fast benchmark
+streamlit run app.py               # local console: one case, batch results, audit trail
 ```
 
 ### Watch it recover one payment
@@ -271,7 +224,7 @@ python -m punar.main audit --db punar_audit.db
 
 ## What is real and what is not
 
-Judges should not have to guess which parts are load-bearing.
+A reviewer should not have to guess which parts are load-bearing.
 
 **Real:** the taxonomy, the guardrail engine, the policy judge, the bandit and its
 persistence, the audit chain, the job queue, webhook signature verification, the
@@ -290,6 +243,10 @@ API surface, and the simulator with its statistics.
 
 No response ever reports a simulated send as delivered. `/health`, `/stats` and every
 audit record carry `providers.*.simulated`, so provenance travels with the number.
+
+The decline classifier is rule-based, not an LLM. An optional LLM variant and the
+measurements behind that choice live in [`docs/why_not_llm.md`](docs/why_not_llm.md);
+it is off by default and not required for anything here to run.
 
 ---
 
