@@ -60,7 +60,7 @@ streamlit run app.py                                 # judge console: walkthroug
                                                      # (streamlit ships with .[dev]; .[demo] alone also works)
 ```
 
-[5-minute pitch video](TODO: paste video URL here)
+
 
 ---
 
