@@ -1,4 +1,4 @@
-# Punar — autonomous recovery agent for failed Razorpay payments
+# Punar: autonomous recovery agent for failed Razorpay payments
 
 **Punar** (Sanskrit: *"again", "reborn"*) turns failed Razorpay e-mandate / UPI / card
 payments into successful ones, while staying inside RBI Fair-Practices and
@@ -10,7 +10,7 @@ customer's language, **runs that copy through a pre-send policy judge that can a
 block the send**, observes the result, and updates a per-reason Beta posterior that
 survives the process.
 
-Built for the Razorpay Buildathon, **Track 03 — AI Revenue Recovery**:
+Built for the Razorpay Buildathon, **Track 03, AI Revenue Recovery**:
 *"measured money recovered across a batch, with compliant escalation, stopping rules,
 and an audit trail."*
 
@@ -43,10 +43,10 @@ Paired over seeds, Punar vs each comparator:
 recovery rate.** It matches it (+0.8 pts, inside the confidence interval), and the
 difference it actually makes is elsewhere:
 
-- **It gets there on 7% fewer touches** (7.79 vs 8.41 per recovery) — the same revenue
+- **It gets there on 7% fewer touches** (7.79 vs 8.41 per recovery), the same revenue
   for less of the customer's attention.
 - **It makes zero contacts it should not have made.** The realistic baseline contacts
-  customers on 29 non-retriable declines per cohort — fraud blocks, closed accounts,
+  customers on 29 non-retriable declines per cohort: fraud blocks, closed accounts,
   lost/stolen cards. Punar contacts none, because the gate blocks them and routes them
   to a human instead.
 - **The ablation shows every component earns its place.** Taxonomy routing alone gets
@@ -127,7 +127,7 @@ uvicorn punar.api.server:app --reload
 | `POST /webhooks/razorpay` | Razorpay `payment.failed` receiver | HMAC signature |
 | `GET /health`, `GET /ready` | real dependency checks (policy, audit chain, queue) | none |
 | `GET /cases/{case_id}` | latest audit revision for a case | API key |
-| `GET /cases/{case_id}/history` | every revision — the append-only trail | API key |
+| `GET /cases/{case_id}/history` | every revision, the append-only trail | API key |
 | `GET /jobs/{job_id}` | recovery-run status, including dead letters | API key |
 | `GET /audit/verify` | verify the audit hash chain end to end | API key |
 | `GET /bandit/posteriors` | what the agent has learned so far | API key |
@@ -186,11 +186,11 @@ Every transition appends to a hash-chained audit trail.
 | `punar/api/config.py` | validated settings; refuses to start when misconfigured |
 | `punar/api/jobs.py` | durable job queue with leases, retries and a dead-letter path |
 | `punar/api/providers.py` | channel / consent / profile / outcome interfaces + stubs |
-| `punar/sim/world.py` | the world model — one scoring path for every arm |
+| `punar/sim/world.py` | the world model, one scoring path for every arm |
 | `punar/sim/arms.py` | do-nothing, naive, realistic, ablations, Punar |
 | `punar/sim/params.py` | every modelling constant, with its justification |
 | `punar/sim/stats.py` | bootstrap CIs, paired permutation tests, effect sizes |
-| `punar/config/policy.json` | guardrails, channels, costs, backoffs — one source of truth |
+| `punar/config/policy.json` | the single source of truth for guardrails, channels, costs, backoffs |
 
 ---
 
@@ -208,7 +208,7 @@ Every transition appends to a hash-chained audit trail.
 
 The policy judge is a control, not a log line: on rejection the message is **not sent**,
 no touch is recorded, and the case is escalated. It matches Devanagari and romanized
-Hindi as well as English, and normalises Unicode first — `"You won't…"` with a curly
+Hindi as well as English, and normalises Unicode first. `"You won't…"` with a curly
 apostrophe is caught exactly like the ASCII form.
 
 The audit store is append-only **in fact**: `BEFORE UPDATE` / `BEFORE DELETE` triggers
@@ -234,7 +234,7 @@ API surface, and the simulator with its statistics.
 | gap | today | production path |
 |---|---|---|
 | Message delivery | `StubChannelSender` records what *would* be sent and returns `delivered=False` | WhatsApp Business / SMS gateway / SES behind the `ChannelSender` protocol |
-| Outcome observation | `StubOutcomeObserver` — a seeded coin flip | correlate `payment.captured` webhooks back to the preceding touch |
+| Outcome observation | `StubOutcomeObserver`, a seeded coin flip | correlate `payment.captured` webhooks back to the preceding touch |
 | Customer contact details | `StubCustomerProfileLookup` returns none | Razorpay Customer API or the merchant's CRM |
 | Consent / DND registry | `StubConsentLookup` reads a configured list | the merchant's consent ledger + DNCR |
 | Payment link creation | a constructed `razorpay.me` URL | Razorpay Payment Links API |
@@ -266,7 +266,7 @@ a learned posterior survives across separate ranking calls.
 
 Every random draw is derived by SHA-256 from `(seed, case_id, intervention, round)`.
 The benchmark clock is pinned. Nothing on the benchmark path calls `datetime.now()`,
-uses the unseeded global `random`, or depends on dict ordering — results are identical
+uses the unseeded global `random`, or depends on dict ordering. Results are identical
 across processes and across `PYTHONHASHSEED` values.
 
 ## Docker
@@ -279,4 +279,4 @@ docker run -p 8000:8000 -v punar-data:/data \
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT: see [LICENSE](LICENSE).

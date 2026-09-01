@@ -1,4 +1,4 @@
-# Punar — architecture
+# Punar: architecture
 
 Punar is an autonomous agent that recovers failed Razorpay payments under RBI
 Fair-Practices constraints. This document describes what it is made of, why the
@@ -27,7 +27,7 @@ flowchart TD
 The queue is durable rather than in-process because Razorpay retries webhooks and a
 restart between the `202` and the recovery run would otherwise lose the payment
 silently. Idempotency is keyed on the Razorpay event id, so a redelivery can never
-drive a second round of customer contact — without it the touch caps are unenforceable.
+drive a second round of customer contact. Without it the touch caps are unenforceable.
 
 ---
 
@@ -52,10 +52,10 @@ stateDiagram-v2
 Every transition appends to the audit trail. Three of these edges are the ones that
 matter for a compliance review, and each is a real branch with a test behind it:
 
-- **`guard → terminal`** — no permitted action exists, so nothing is attempted.
-- **`plan → terminal`** — every option destroys value, so the agent abstains. Without
+- **`guard → terminal`.** No permitted action exists, so nothing is attempted.
+- **`plan → terminal`.** Every option destroys value, so the agent abstains. Without
   an abstention arm a "cost-aware" ranker still always acts.
-- **`act → terminal`** — the policy judge rejected the copy, so nothing was sent, no
+- **`act → terminal`.** The policy judge rejected the copy, so nothing was sent, no
   touch was recorded, and the case went to a human.
 
 ---
@@ -77,7 +77,7 @@ matter for a compliance review, and each is a real branch with a test behind it:
 | | `api/config.py` | validated settings; refuses to start when misconfigured |
 | | `api/jobs.py` | durable queue: leases, retries, dead letters |
 | | `api/providers.py` | protocols for the four external systems, plus labelled stubs |
-| **measure** | `sim/world.py` | the world model — one scoring path for every arm |
+| **measure** | `sim/world.py` | the world model, one scoring path for every arm |
 | | `sim/arms.py` | do-nothing, naive, realistic, ablations, Punar |
 | | `sim/params.py` | every modelling constant with its justification |
 | | `sim/stats.py` | bootstrap CIs, paired permutation tests, effect sizes |
@@ -120,7 +120,7 @@ This is the difference between a fraud block being *written off silently* and be
 because it is the one action that does not re-present a dead instrument.
 
 **Scheduling.** The next attempt is scheduled from the reason's backoff plus the
-contact window — not a fixed interval. `insufficient_funds` waits 72 hours for a
+contact window, not a fixed interval. `insufficient_funds` waits 72 hours for a
 payday credit; `upi_timeout` retries in 4 hours because it is a transient network
 fault. A single hardcoded interval would place every attempt on its own calendar day
 and quietly disable the daily cap, the inter-touch gap and the retry budget all at once.
@@ -131,10 +131,10 @@ and quietly disable the daily cap, the inter-touch gap and the retry budget all 
 
 The bandit keeps a Beta posterior per `(reason, intervention)`:
 
-- **Selection** — draw `p ~ Beta(α, β)` per arm, score
+- **Selection.** Draw `p ~ Beta(α, β)` per arm, score
   `EV = p × amount − channel_cost − annoyance(touches) × intrusiveness`, take the
   argmax; abstain if the best EV is below the policy floor.
-- **Update** — on an observed outcome, `α += 1` on success else `β += 1`, and write
+- **Update.** On an observed outcome, `α += 1` on success else `β += 1`, and write
   through to `bandit_store`.
 - **Persistence is the point.** Seeding arms from a frozen prior on every call makes
   the sampler decorative: it can never depart from its prior no matter what it
@@ -163,7 +163,7 @@ cannot be quietly altered. Both are enforced, not asserted:
   shell.
 - **Hash-chained.** Each row carries `prev_hash` and a `row_hash` over
   `(prev_hash, id, case_id, event_type, created_at, payload)`. `verify_chain()` detects
-  edits, insertions, reorderings and deletions — including deletion of the head row.
+  edits, insertions, reorderings and deletions, including deletion of the head row.
 - **Server-assigned ordering.** `created_at` is stamped by the process and ordering is
   by the monotonic row id, so caller-supplied data can never decide which revision is
   "latest".
@@ -177,8 +177,8 @@ cannot be quietly altered. Both are enforced, not asserted:
 
 ## 7. Measurement
 
-Every arm — do-nothing, naive dunning, a realistic merchant baseline, the two ablations
-and Punar — is scored by the **same** function in `sim/world.py`. No arm has a private
+Every arm, do-nothing, naive dunning, a realistic merchant baseline, the two ablations
+and Punar, is scored by the **same** function in `sim/world.py`. No arm has a private
 penalty or bonus branch. This matters more than any headline number: a comparison in
 which the comparator is scored differently measures the author's thumb, not the policy.
 

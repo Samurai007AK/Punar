@@ -1,4 +1,4 @@
-# Verification notes — what broke, and how it was found
+# Verification notes: what broke, and how it was found
 
 This file exists because "what broke during development and how you recovered from it"
 is worth more than a clean-looking history. Everything below was a real defect in this
@@ -15,7 +15,7 @@ defect, how it was detected, and the test that now prevents it.
 baseline touch took a flat −0.35 absolute probability penalty (`MISALIGN_PENALTY +
 INSTANT_RETRY_PENALTY`) that Punar never paid, and `aligned` was hardcoded `False` for
 all four baseline actions, so the penalty always applied. The same action on the same
-case scored **0.030 for the baseline and 0.420 for Punar** — a 14× difference produced
+case scored **0.030 for the baseline and 0.420 for Punar**. A 14× difference produced
 by nothing but which arm was asking.
 
 **How it was found:** re-scoring the identical naive baseline through Punar's own
@@ -48,7 +48,7 @@ numbers, and they mean something.
 **`silent_retry_aligned` and `escalate_manual` were unreachable.** `CHANNEL_MAP` mapped
 both to channel `"none"`, and `policy.json` defined only `whatsapp/email/voice/sms`, so
 `channel_enabled(policy, "none")` returned `False` and the guard skipped them on every
-case. Payday-aligned silent retry — the feature the README led with — had never fired
+case. Payday-aligned silent retry, the feature the README led with, had never fired
 once. Worse, `fraud_block` and `mandate_expired` had `escalate_manual` as their *only*
 candidate, so they were written off silently instead of escalated to a human.
 
@@ -58,7 +58,7 @@ The gate reads those exemptions rather than special-casing channel names.
 Test: `test_silent_retry_is_reachable_and_does_not_contact_the_customer`.
 
 **The bandit never learned.** `rank_intervention()` called `seed_arms()` on every
-invocation, re-initialising every arm from a frozen `PRIORS` dict — so `update_arm()`
+invocation, re-initialising every arm from a frozen `PRIORS` dict. `update_arm()`
 wrote posteriors into objects discarded before the next decision, not just across cases
 but *across rounds within one case*. Probe: 50 recorded wins drove α to 52.0; the very
 next call returned α=2.0. Thompson sampling with no posterior is a seeded coin.
@@ -71,14 +71,14 @@ Test: `test_posterior_survives_across_separate_ranking_calls`.
 
 ## 3. The policy judge was a log line, not a control
 
-`act()` rendered the copy, ran the judge, and on rejection retried in English — then
+`act()` rendered the copy, ran the judge, and on rejection retried in English, then
 appended the touch with `"delivered": True` **regardless of the outcome**. A message the
 judge had rejected was sent anyway.
 
 The judge was also English-only on a product whose templates are Hindi and Hinglish.
 These all passed clean: *"Bhugtan nahi kiya to hum kanooni karyavahi karenge"* (a legal
 threat), *"Turant paisa bhejo warna gharwalon ko batayenge"* (threatening to tell the
-customer's family — textbook RBI recovery harassment). A curly apostrophe defeated it:
+customer's family, textbook RBI recovery harassment). A curly apostrophe defeated it:
 `"won't"` was blocked, `"won’t"` was not. Meanwhile "toll-free helpline" tripped the
 unapproved-discount rule.
 
@@ -92,7 +92,7 @@ Tests: `test_policy_judge_blocks_the_send_and_escalates`, plus non-English judge
 ## 4. The audit trail was not append-only
 
 `audit.py` opened with the docstring *"Append-only SQLite audit trail"*. Nine lines
-later `upsert()` ran `UPDATE decisions SET data = ?` — and `upsert` was the **only**
+later `upsert()` ran `UPDATE decisions SET data = ?`, and `upsert` was the **only**
 write the API ever performed. Two writes for one case left one row, and the earlier
 version was unrecoverable. `clear()` was an unrestricted `DELETE FROM decisions`
 exposed as a public method, and the test suite asserted the overwrite behaviour as
@@ -112,7 +112,7 @@ Tests: `test_verify_chain_detects_out_of_band_tampering`,
 ## 5. The service accepted unsigned webhooks and leaked PII
 
 `verify_signature()` **failed open**: with no `RAZORPAY_WEBHOOK_SECRET` configured it
-logged a warning and returned `True`. Verified live — a request with no signature and
+logged a warning and returned `True`. Verified live: a request with no signature and
 one with a garbage signature both returned `202`. No endpoint had authentication, and
 `GET /cases/{case_id}` returned `customer_id`, amount, and the full rendered message
 body to anyone who could guess a Razorpay payment id.
@@ -135,7 +135,7 @@ Tests: `tests/test_api_server.py` (23 tests).
 ## 6. Smaller, but load-bearing
 
 - **`pip install .` produced a broken package.** `punar/config/policy.json` was not
-  packaged, and every code path loads it — the installed wheel raised `FileNotFoundError`.
+  packaged, and every code path loads it. The installed wheel raised `FileNotFoundError`.
 - **A hardcoded `timedelta(hours=26)`** advanced the clock between rounds, putting every
   touch on its own calendar day and thereby disabling the daily touch cap, the
   inter-touch gap and the retry budget simultaneously. Replaced with per-reason backoff
@@ -146,13 +146,13 @@ Tests: `tests/test_api_server.py` (23 tests).
   touch with `date` but no `timestamp` crashed with `AttributeError`.
 - **The classifier read the wrong payload shape.** It expected a nested
   `failure["error"]["code"]`, but a real Razorpay `payment.failed` entity carries flat
-  `error_code` / `error_description` / `error_reason` — so every real webhook fell
+  `error_code` / `error_description` / `error_reason`, so every real webhook fell
   through to the catch-all. It also misrouted `"closed loop wallet not supported"` to
   `account_closed` (non-retryable), permanently writing off a recoverable payment.
 - **The LangGraph runner had never run.** `graph.invoke()` was passed the *function*
   returned by the outcome-injection helper instead of a state dict, and that helper ran
   the whole loop internally, making the graph a no-op wrapper. `langgraph` was not
-  installed and the path had no real test. **Removed** rather than shipped — see the
+  installed and the path had no real test. **Removed** rather than shipped, see the
   note in `punar/core/agent.py`.
 - **Tautological tests.** `assert a != b or True` cannot fail; a test named
   `test_annoyance_grows_sublinearly_with_touches` asserted only monotonicity over a
