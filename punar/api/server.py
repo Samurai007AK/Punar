@@ -333,7 +333,7 @@ def normalize_case(entity: RazorpayPaymentEntity, state: AppState) -> dict[str, 
     opted_out = state.providers.consent.is_opted_out(entity.customer_id)
     landing = next_contact_window(datetime.now(UTC), state.policy)
 
-    case = {
+    case: dict[str, Any] = {
         "case_id": entity.id or f"pay_{int(time.time() * 1000)}",
         "customer_id": entity.customer_id,
         "amount_inr": round(entity.amount / 100.0, 2),
@@ -500,7 +500,7 @@ async def razorpay_webhook(
 
     raw = await request.body()
     if len(raw) > settings.max_body_bytes:
-        raise HTTPException(status_code=status.HTTP_413_CONTENT_TOO_LARGE,
+        raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
                             detail=f"body exceeds {settings.max_body_bytes} bytes")
 
     if not verify_signature(raw, x_razorpay_signature, settings):

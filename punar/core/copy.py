@@ -24,7 +24,7 @@ from punar.core.taxonomy import get_reason
 DEFAULTS = {"brand": "Punar", "sender": "Punar Payments",
             "optout": "Reply STOP to opt out of payment reminders."}
 
-TEMPLATES: dict[str, dict[str, dict[str, str]]] = {
+TEMPLATES: dict[str, dict[str, str]] = {
     "silent_retry_aligned": {
         "en": "We'll automatically retry your {merchant} payment of INR {amount} tonight after 7 PM IST. No action needed. {optout}",
         "hi": "Hum aaj raat 7 baje ke baad apne aap {merchant} ka INR {amount} ka bhugtan dobara prayas karenge. Koi kaarrwai zaroori nahin. {optout}",

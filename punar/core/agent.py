@@ -141,7 +141,8 @@ def act(state: dict[str, Any]) -> dict[str, Any]:
     merchant = str(state["case"].get("merchant_name") or "merchant")
     link = state["case"].get("payment_link") or f"https://razorpay.me/pay/{state['case'].get('case_id')}"
 
-    copy_text, copy_ok, violations = "", True, []
+    copy_text, copy_ok = "", True
+    violations: list[str] = []
     if reaches_customer:
         copy_text, copy_ok, violations = generate_copy(
             iv, reason, lang, merchant=merchant, amount=f"{amount:.0f}", link=link,
