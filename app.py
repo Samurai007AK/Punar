@@ -127,23 +127,32 @@ with tab_case:
 # --------------------------------------------------------------------- tab 2
 with tab_batch:
     st.subheader("Batch benchmark results")
-    json_path = os.path.join(DEMO_RUN_DIR, "benchmark.json")
+    # The committed 250x20 run is the canonical one the README quotes. A live
+    # re-run writes to its own directory so it can never overwrite that.
+    results_dir = st.session_state.get("results_dir", DEMO_RUN_DIR)
+    json_path = os.path.join(results_dir, "benchmark.json")
 
     if not os.path.exists(json_path):
         st.warning(f"No results yet. Run `python -m punar.main report --out {DEMO_RUN_DIR}` "
                    "once, or generate a quick one below.")
-    if st.button("Run a quick benchmark now (250 cases x 10 seeds)"):
+    if st.button("Re-run a quick benchmark (250 cases x 3 seeds, ~15s)"):
         from punar.benchmark import run_benchmark, to_json_safe
         from punar.charts import generate_charts
         from punar.sim.params import SimParams
+        quick_dir = "outputs/quick_run"
         with st.spinner("Running..."):
-            result = run_benchmark(seeds=10, params=SimParams())
-            os.makedirs(DEMO_RUN_DIR, exist_ok=True)
-            generate_charts(result, DEMO_RUN_DIR)
-            with open(json_path, "w", encoding="utf-8") as fh:
+            result = run_benchmark(seeds=3, params=SimParams())
+            os.makedirs(quick_dir, exist_ok=True)
+            generate_charts(result, quick_dir)
+            with open(os.path.join(quick_dir, "benchmark.json"), "w", encoding="utf-8") as fh:
                 json.dump(to_json_safe(result), fh, indent=2, default=str)
-        st.success("Done.")
+        st.session_state["results_dir"] = quick_dir
+        st.success("Done. Showing the 3-seed run; the committed 250x20 results are untouched.")
         st.rerun()
+
+    if results_dir != DEMO_RUN_DIR:
+        st.info("Showing a live 3-seed re-run. Restart the app to go back to the "
+                "canonical 250 x 20 results.")
 
     if os.path.exists(json_path):
         with open(json_path, encoding="utf-8") as fh:
@@ -166,12 +175,12 @@ with tab_batch:
         st.caption("Simulated outcomes under stated priors, not measured Razorpay results. "
                    "95% bootstrap CIs over seeds.")
 
-        pngs = sorted(p for p in os.listdir(DEMO_RUN_DIR) if p.endswith(".png"))
+        pngs = sorted(p for p in os.listdir(results_dir) if p.endswith(".png"))
         if pngs:
             st.markdown("**charts**")
             cols = st.columns(3)
             for i, name in enumerate(pngs):
-                cols[i % 3].image(os.path.join(DEMO_RUN_DIR, name),
+                cols[i % 3].image(os.path.join(results_dir, name),
                                   caption=name.replace(".png", "").replace("_", " "))
 
 # --------------------------------------------------------------------- tab 3
