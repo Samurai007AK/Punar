@@ -365,7 +365,7 @@ def prior_ranking() -> dict[str, list[tuple[str, float]]]:
 def circularity_report(params: SimParams, n_samples: int = 400) -> dict[str, Any]:
     """How much does the agent's prior agree with the world's argmax?
 
-    A high number here is the thing a judge should be suspicious of. It is
+    A high number here is the thing a reviewer should be suspicious of. It is
     reported, not hidden.
     """
     world = world_ranking(params, n_samples)

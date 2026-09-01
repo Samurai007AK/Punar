@@ -3,7 +3,7 @@
 Nothing in the simulator may hard-code a number that encodes a belief about the
 world. If a constant expresses "how often does X happen", it lives here, carries
 a written justification, and is overridable from the CLI (``--set name=value``)
-so a judge can re-run the whole benchmark under their own assumptions and see
+so a reviewer can re-run the whole benchmark under their own assumptions and see
 how much of the result survives.
 
 The parameter set is emitted alongside every result (``SimParams.to_dict``) so a
@@ -206,7 +206,7 @@ class SimParams:
 
 DEFAULTS = SimParams()
 
-# Scalar parameters a judge is most likely to want to poke at.
+# Scalar parameters a reviewer is most likely to want to poke at.
 TUNABLE = [f.name for f in fields(SimParams)
            if isinstance(getattr(DEFAULTS, f.name), (int, float))
            and not isinstance(getattr(DEFAULTS, f.name), bool)]
