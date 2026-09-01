@@ -30,8 +30,13 @@ dependencies = [
 [project.optional-dependencies]
 charts = ["matplotlib==3.9.3"]
 crypto = ["cryptography>=42.0"]
+demo = ["streamlit>=1.35"]
+# Exploratory: punar.core.classify_llm's real path (see docs/why_not_llm.md).
+# Not required by the shipped agent -- classify_llm imports groq lazily and
+# falls back to a mock without it, so this extra is opt-in only.
+llm = ["groq>=0.11"]
 dev = [
-    "punar[charts,crypto]",
+    "punar[charts,crypto,demo]",
     "pytest==8.3.4",
     "httpx>=0.27",
     "ruff>=0.6",

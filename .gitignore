@@ -28,6 +28,12 @@ env/
 *.log
 charts/*.png
 !outputs/**
+# app.py (the judge console) writes a demo audit DB under outputs/, which the
+# negation above would otherwise re-include despite the *.db rule. It is
+# regenerated on demand and must never be committed.
+outputs/*.db
+outputs/*.db-wal
+outputs/*.db-shm
 dist/
 build/
 *.egg-info/

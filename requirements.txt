@@ -8,6 +8,7 @@
 # Optional extras, all declared in pyproject.toml:
 #   .[charts]     matplotlib, for benchmark chart rendering
 #   .[crypto]     cryptography, for encrypted PII at rest in the audit store
+#   .[demo]       streamlit, for the judge console (streamlit run app.py)
 #   .[dev]        everything above plus pytest, httpx, ruff, mypy, coverage
 
 fastapi==0.115.6
